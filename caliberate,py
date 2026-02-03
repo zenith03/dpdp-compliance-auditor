@@ -1,0 +1,32 @@
+from sentence_transformers import SentenceTransformer, util
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+print("--- 🎚️ THRESHOLD CALIBRATION TOOL ---")
+
+# 1. The Anchor (The Law)
+rule = "DPDP Rule 7(2): The Data Fiduciary must notify the Board within 72 hours of a breach."
+
+# 2. The Test Cases
+# Case A: A Weak Policy (Should be borderline/low)
+weak_policy = "We will try to tell people if we get hacked eventually."
+
+# Case B: A Good Policy (Should be high)
+good_policy = "In case of a data breach, we will inform the Data Protection Board within 72 hours."
+
+# Case C: Irrelevant Text (Should be near 0)
+garbage_text = "We sell the best organic moringa powder in India."
+
+# 3. Calculate Scores
+print(f"\nRule: {rule[:50]}...")
+print("-" * 60)
+
+for label, text in [("Weak", weak_policy), ("Good", good_policy), ("Junk", garbage_text)]:
+    # Compute Score
+    rule_vec = model.encode(rule, convert_to_tensor=True)
+    text_vec = model.encode(text, convert_to_tensor=True)
+    score = util.cos_sim(rule_vec, text_vec).item()
+    
+    print(f"Type: {label:5} | Score: {score:.4f} ({int(score*100)}%)")
+    print(f"Text: \"{text}\"")
+    print("-" * 60)

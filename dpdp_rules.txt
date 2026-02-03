@@ -1,0 +1,8 @@
+DPDP Rule 3 (Notice): The Data Fiduciary must provide a notice comprising an itemised description of personal data collected and the specified purpose for processing.
+DPDP Rule 7(1) (User Notification): On becoming aware of a breach, the Data Fiduciary shall intimate each affected Data Principal in a concise and clear manner without delay.
+DPDP Rule 7(2) (Board Notification): On becoming aware of a breach, the Data Fiduciary shall intimate the Data Protection Board within seventy-two hours of becoming aware of such breach.
+DPDP Rule 8 (Erasure): The Data Fiduciary shall erase personal data if the Data Principal does not approach the Fiduciary for the specified purpose for a defined period.
+DPDP Rule 9 (Contact Info): Every Data Fiduciary shall prominently publish the business contact information of the Data Protection Officer or a person able to answer processing questions.
+DPDP Rule 10 (Children's Consent): The Data Fiduciary shall adopt technical measures to ensure verifiable consent of the parent is obtained before processing any personal data of a child.
+DPDP Rule 14 (Rights): The Data Fiduciary shall publish details of the means using which a Data Principal may exercise their rights to access, correction, and grievance redressal.
+DPDP Rule 15 (Cross-Border Transfer): Personal data may be transferred outside India only if the Data Fiduciary meets requirements specified by the Central Government.

@@ -1,8 +1,36 @@
-DPDP Rule 3 (Notice): The Data Fiduciary must provide a notice comprising an itemised description of personal data collected and the specified purpose for processing.
-DPDP Rule 7(1) (User Notification): On becoming aware of a breach, the Data Fiduciary shall intimate each affected Data Principal in a concise and clear manner without delay.
-DPDP Rule 7(2) (Board Notification): On becoming aware of a breach, the Data Fiduciary shall intimate the Data Protection Board within seventy-two hours of becoming aware of such breach.
-DPDP Rule 8 (Erasure): The Data Fiduciary shall erase personal data if the Data Principal does not approach the Fiduciary for the specified purpose for a defined period.
-DPDP Rule 9 (Contact Info): Every Data Fiduciary shall prominently publish the business contact information of the Data Protection Officer or a person able to answer processing questions.
-DPDP Rule 10 (Children's Consent): The Data Fiduciary shall adopt technical measures to ensure verifiable consent of the parent is obtained before processing any personal data of a child.
-DPDP Rule 14 (Rights): The Data Fiduciary shall publish details of the means using which a Data Principal may exercise their rights to access, correction, and grievance redressal.
-DPDP Rule 15 (Cross-Border Transfer): Personal data may be transferred outside India only if the Data Fiduciary meets requirements specified by the Central Government.
+Rule 3(b)(i): an itemised description of such personal data
+Rule 3(b)(ii): the specified purpose or purposes of, and specific description of the goods or services to be provided or uses to be enabled by, such processing
+Rule 3(c)(i): withdraw her consent, with the ease of doing so being comparable to that with which such consent was given
+Rule 3(c)(ii): exercise her rights under the Act
+Rule 3(c)(iii): make a complaint to the Board
+Rule 6(1)(a): appropriate data security measures, such as securing of personal data through encryption, obfuscation, masking or the use of virtual tokens mapped to that personal data
+Rule 6(1)(b): appropriate measures to control access to the computer resources used by such Data Fiduciary or such a Data Processor
+Rule 6(1)(c): visibility on the accessing of such personal data, through appropriate logs, monitoring and review
+Rule 6(1)(d): reasonable measures for continued processing in the event of confidentiality, integrity or availability of such personal data being compromised
+Rule 6(1)(e): retain such logs and personal data for a period of one year
+Rule 6(1)(f): appropriate provision in the contract entered into between such Data Fiduciary and such a Data Processor for taking reasonable security safeguards
+Rule 6(1)(g): appropriate technical and organisational measures to ensure effective observance of security safeguards
+Rule 7(1): intimate to each affected Data Principal, in a concise, clear and plain manner and without delay
+Rule 7(1)(a): a description of the breach, including its nature, extent and the timing of its occurrence
+Rule 7(1)(b): the consequences relevant to her, that are likely to arise from the breach
+Rule 7(1)(c): the measures implemented and being implemented by the Data Fiduciary to mitigate risk
+Rule 7(1)(d): the safety measures that she may take to protect her interests
+Rule 7(1)(e): business contact information of a person who is able to respond on behalf of the Data Fiduciary to queries
+Rule 7(2)(a): intimate to the Board without delay, a description of the breach, including its nature, extent, timing and location of occurrence
+Rule 7(2)(b): within seventy-two hours of becoming aware of the breach
+Rule 8(1): erase such personal data unless its retention is necessary for compliance with any law for the time being in force
+Rule 8(2): At least forty-eight hours before completion of the time period for erasure inform the Data Principal
+Rule 8(3): retain associated traffic data and other logs of the processing for a minimum period of one year
+Rule 9: business contact information of the Data Protection Officer or a person who is able to answer on behalf of the Data Fiduciary
+Rule 10(1): ensure that verifiable consent of the parent is obtained before the processing of any personal data of a child
+Rule 10(1)(a): reliable details of identity and age of the individual available with the Data Fiduciary
+Rule 10(1)(b): virtual token mapped to such details which is issued by an authorised entity
+Rule 10(2): verified by a Digital Locker Service Provider
+Rule 11(1): verify that such guardian is appointed by a court of law, or by a designated authority or by a local level committee
+Rule 13(1): undertake a Data Protection Impact Assessment and an audit once in every period of twelve months
+Rule 13(3): verify that technical measures including algorithmic software are not likely to pose a risk to the rights of Data Principals
+Rule 13(4): personal data and the traffic data pertaining to its flow is not transferred outside the territory of India
+Rule 14(1)(a): the details of the means using which a Data Principal may make a request for the exercise of such rights
+Rule 14(1)(b): the particulars, if any, such as the username or other identifier required to identify her under its terms of service
+Rule 14(3): within a reasonable period not exceeding ninety days under its grievance redressal system
+Rule 14(4): nominate one or more individuals using the means and furnishing the particulars required

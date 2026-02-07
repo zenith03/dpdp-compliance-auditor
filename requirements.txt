@@ -1,4 +1,5 @@
 streamlit
 sentence-transformers
 torch
-numpy
+plotly
+pandas

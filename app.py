@@ -1,95 +1,78 @@
 import streamlit as st
-from sentence_transformers import SentenceTransformer, util
+from ai_engine import ComplianceAuditor
 
-# 1. Page Configuration (The "Look and Feel")
-st.set_page_config(
-    page_title="DPDP 2025 Auditor",
-    page_icon="⚖️",
-    layout="wide"
-)
+# Page Config
+st.set_page_config(page_title="DPDP 2025 Auditor", page_icon="⚖️", layout="wide")
 
-# 2. Load Model (Cached so it doesn't reload every time)
+st.title("🇮🇳 DPDP 2025 Compliance Auditor")
+st.markdown("Upload a Privacy Policy to check compliance with the **Digital Personal Data Protection Rules 2025**.")
+
+# Initialize AI Engine (Cached to prevent reloading)
 @st.cache_resource
-def load_model():
-    return SentenceTransformer('all-MiniLM-L6-v2')
+def load_auditor():
+    return ComplianceAuditor()
 
-model = load_model()
+try:
+    auditor = load_auditor()
+except Exception as e:
+    st.error(f"Error loading AI Engine: {e}")
+    st.stop()
 
-# 3. The Rules (Your "Gold Standard" from the 2025 Gazette)
-DPDP_RULES = {
-    "Rule 3 (Notice)": "The Data Fiduciary must provide a notice comprising an itemised description of personal data collected and the specified purpose for processing.",
-    "Rule 7(1) (User Notification)": "On becoming aware of a breach, the Data Fiduciary shall intimate each affected Data Principal in a concise and clear manner without delay.",
-    "Rule 7(2) (Board Notification)": "On becoming aware of a breach, the Data Fiduciary shall intimate the Data Protection Board within seventy-two hours of becoming aware of such breach.",
-    "Rule 8 (Erasure)": "The Data Fiduciary shall erase personal data if the Data Principal does not approach the Fiduciary for the specified purpose for a defined period.",
-    "Rule 9 (Contact Info)": "Every Data Fiduciary shall prominently publish the business contact information of the Data Protection Officer or a person able to answer processing questions.",
-    "Rule 10 (Children's Consent)": "The Data Fiduciary shall adopt technical measures to ensure verifiable consent of the parent is obtained before processing any personal data of a child.",
-    "Rule 14 (Rights)": "The Data Fiduciary shall publish details of the means using which a Data Principal may exercise their rights to access, correction, and grievance redressal.",
-    "Rule 15 (Cross-Border Transfer)": "Personal data may be transferred outside India only if the Data Fiduciary meets requirements specified by the Central Government."
-}
-
-# 4. The UI Header
-st.title("⚖️ Automated DPDP 2025 Compliance Auditor")
-st.markdown("""
-This tool uses an **AI Neural Network (MiniLM-L6)** to audit company privacy policies against the **Digital Personal Data Protection Rules, 2025**.
-""")
-
-# 5. Input Section
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader("📝 Input Policy Text")
-    policy_text = st.text_area("Paste Privacy Policy Here:", height=400, placeholder="Paste the full text of the privacy policy here...")
-
-with col2:
-    st.subheader("⚙️ Audit Controls")
-    threshold = st.slider("Sensitivity Threshold (Calibration)", 0.0, 1.0, 0.45, 0.01, help="Adjust strictness based on your calibration study.")
-    st.info(f"**Current Status:** Ready to Audit\n\n**Strictness:** {int(threshold*100)}%")
+# Sidebar for Input
+with st.sidebar:
+    st.header("Upload Policy")
+    uploaded_file = st.file_uploader("Choose a text file", type="txt")
     
-    audit_button = st.button("🚀 Run Compliance Audit", type="primary")
+    # Optional: Paste Text directly
+    text_input = st.text_area("Or paste policy text here:", height=200)
 
-# 6. Audit Logic & Results
-if audit_button and policy_text:
-    st.divider()
-    st.subheader("📊 Compliance Report")
-    
-    # Split policy into sentences for granular matching
-    policy_sentences = [s.strip() for s in policy_text.split('.') if len(s) > 20]
-    
-    # Progress Bar
-    progress_bar = st.progress(0)
-    
-    # Metrics containers
-    passed = 0
-    failed = 0
-    
-    results_container = st.container()
+# Main Logic
+policy_content = ""
+if uploaded_file is not None:
+    # Safely decode the file
+    policy_content = uploaded_file.read().decode("utf-8")
+elif text_input:
+    policy_content = text_input
 
-    for idx, (rule_name, rule_text) in enumerate(DPDP_RULES.items()):
-        # Vectorize
-        rule_vec = model.encode(rule_text, convert_to_tensor=True)
-        policy_vecs = model.encode(policy_sentences, convert_to_tensor=True)
+if st.button("🚀 Run Compliance Audit"):
+    if not policy_content:
+        st.warning("Please upload a file or paste text first.")
+    else:
+        with st.spinner("AI is analyzing legal clauses..."):
+            # Run the audit
+            results = auditor.audit_policy(policy_content)
         
-        # Calculate Similarity
-        scores = util.cos_sim(rule_vec, policy_vecs)[0]
-        max_score = float(scores.max())
-        best_match_idx = int(scores.argmax())
-        best_match_text = policy_sentences[best_match_idx]
-        
-        # Display Result
-        with results_container:
-            with st.expander(f"{rule_name}", expanded=True):
-                if max_score > threshold:
-                    st.success(f"✅ COMPLIANT ({int(max_score*100)}% Match)")
-                    st.markdown(f"**Matched Clause:** ...*{best_match_text}*...")
-                    passed += 1
-                else:
-                    st.error(f"🔴 GAP DETECTED - HIGH RISK")
-                    st.markdown("**Action Required:** Draft specific policy language for this rule.")
-                    failed += 1
-        
-        progress_bar.progress((idx + 1) / len(DPDP_RULES))
+        if not results:
+            st.error("No rules found or policy text was empty.")
+        else:
+            # Calculate Score
+            pass_count = sum(1 for r in results if r['status'] == 'PASS')
+            total_rules = len(results)
+            
+            # Avoid division by zero if something goes wrong
+            score = int((pass_count / total_rules) * 100) if total_rules > 0 else 0
 
-    # Summary Scorecard
-    st.sidebar.metric("Compliance Score", f"{int((passed/8)*100)}%", delta=f"{passed} Passed / {failed} Failed")
+            # Display Metrics
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Compliance Score", f"{score}%")
+            col2.metric("Rules Passed", f"{pass_count} / {total_rules}")
+            col3.metric("Critical Gaps", f"{total_rules - pass_count}")
 
-elif audit_button and not policy_text:
-    st.warning("Please paste a privacy policy first.")
+            st.divider()
+
+            # Display Detailed Report
+            st.subheader("📝 Detailed Audit Report")
+            
+            for res in results:
+                # Color code the expander based on status
+                icon = '✅' if res['status'] == 'PASS' else '🔴'
+                label = f"{icon} {res['rule_id']} (Match Confidence: {res['match_score']}%)"
+                
+                with st.expander(label):
+                    st.markdown(f"**Legal Requirement:**\n{res['requirement']}")
+                    st.divider()
+                    if res['status'] == 'PASS':
+                        st.success(f"**Company Policy Matches:** \n> \"{res['company_clause']}\"")
+                    else:
+                        st.error(f"**Gap Detected:** The policy does not adequately address this rule.")
+                        st.markdown("*Recommendation: Add a specific clause addressing this requirement.*")

@@ -76,3 +76,4 @@ if st.button("🚀 Run Compliance Audit"):
                     else:
                         st.error(f"**Gap Detected:** The policy does not adequately address this rule.")
                         st.markdown("*Recommendation: Add a specific clause addressing this requirement.*")
+

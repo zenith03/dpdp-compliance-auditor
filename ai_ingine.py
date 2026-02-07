@@ -1,63 +1,64 @@
 import warnings
 warnings.filterwarnings("ignore")
-
 from sentence_transformers import SentenceTransformer, util
 
-print("--- 🕵️ AUTOMATED COMPLIANCE AUDIT INITIATED ---")
+class ComplianceAuditor:
+    def __init__(self, model_name='all-MiniLM-L6-v2'):
+        print("[+] Loading Legal AI Model...")
+        self.model = SentenceTransformer(model_name)
+        self.rules = self._load_rules()
+        # Pre-compute rule embeddings for speed
+        self.rule_texts = [r['text'] for r in self.rules]
+        self.rule_embeddings = self.model.encode(self.rule_texts, convert_to_tensor=True)
 
-# 1. LOAD THE AI MODEL
-print("[+] Loading Legal AI Model (MiniLM-L6)...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+    def _load_rules(self, filename='dpdp_rules.txt'):
+        """Parses the structured rule file."""
+        parsed_rules = []
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if ':' in line:
+                        # Split at the first colon only
+                        rule_id, rule_text = line.split(':', 1)
+                        parsed_rules.append({
+                            'id': rule_id.strip(),
+                            'text': rule_text.strip()
+                        })
+            print(f"[+] Loaded {len(parsed_rules)} DPDP 2025 Rules.")
+            return parsed_rules
+        except FileNotFoundError:
+            print("❌ ERROR: 'dpdp_rules.txt' not found!")
+            return []
 
-def read_file(filename):
-    """Reads a text file and cleans it up."""
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            text = f.read()
-            # Split by lines and remove empty ones
-            return [line.strip() for line in text.split('\n') if len(line) > 10]
-    except FileNotFoundError:
-        print(f"❌ ERROR: Could not find '{filename}'. Make sure it's in the same folder!")
-        return []
+    def audit_policy(self, policy_text):
+        """Compares a privacy policy against the DPDP rules."""
+        if not policy_text or not self.rules:
+            return []
 
-# 2. INGEST DATA
-print("\n[+] Reading Policy Documents...")
-rules = read_file('dpdp_rules.txt')
-policies = read_file('company_policy.txt')
+        # Split policy into chunks (paragraphs) for better matching
+        policy_chunks = [p.strip() for p in policy_text.split('\n') if len(p) > 20]
+        policy_embeddings = self.model.encode(policy_chunks, convert_to_tensor=True)
 
-if not rules or not policies:
-    print("⚠️ STOPPING: Missing data files.")
-else:
-    # 3. VECTORIZE (Convert Text to Numbers)
-    print(f"[+] Analyzing {len(rules)} Regulatory Rules against {len(policies)} Company Policies...")
-    rule_embeddings = model.encode(rules, convert_to_tensor=True)
-    policy_embeddings = model.encode(policies, convert_to_tensor=True)
+        audit_results = []
 
-    # 4. GENERATE REPORT
-    print("\n" + "="*60)
-    print(f"{'RISK GOVERNANCE REPORT':^60}")
-    print("="*60 + "\n")
+        print(f"[+] Auditing {len(policy_chunks)} policy segments against {len(self.rules)} rules...")
 
-    for i, rule in enumerate(rules):
-        # Clean up rule text for display (take first 60 chars)
-        rule_short = rule[:60] + "..." if len(rule) > 60 else rule
-        print(f"RULE {i+1}: {rule_short}")
-        
-        # FIND BEST MATCH
-        scores = util.cos_sim(rule_embeddings[i], policy_embeddings)[0]
-        best_match_idx = scores.argmax().item()
-        score = scores[best_match_idx].item()
-        matched_policy = policies[best_match_idx]
-        
-        # DECISION THRESHOLD (0.45 is a good balance)
-        if score > 0.45:
-            confidence = int(score * 100)
-            print(f"  ✅ COMPLIANT ({confidence}% Confidence)")
-            print(f"     Mapped to: \"{matched_policy[:80]}...\"")
-        else:
-            print(f"  🔴 GAP DETECTED - HIGH RISK")
-            print(f"     Action Required: Draft policy for this rule.")
-        
-        print("-" * 60)
+        for i, rule in enumerate(self.rules):
+            # Find the best matching paragraph in the policy
+            scores = util.cos_sim(self.rule_embeddings[i], policy_embeddings)[0]
+            best_match_idx = scores.argmax().item()
+            score = scores[best_match_idx].item()
+            matched_text = policy_chunks[best_match_idx]
 
-    print("\n[+] Audit Complete.")
+            # Strict Threshold for Legal Compliance
+            is_compliant = score > 0.45 
+
+            audit_results.append({
+                'rule_id': rule['id'],
+                'requirement': rule['text'],
+                'match_score': round(score * 100, 1),
+                'status': 'PASS' if is_compliant else 'FAIL',
+                'company_clause': matched_text if is_compliant else "No matching clause found."
+            })
+
+        return audit_results

@@ -10,11 +10,9 @@ from sentence_transformers import SentenceTransformer, util
 # ==========================================
 class ComplianceAuditor:
     def __init__(self, model_name='all-MiniLM-L6-v2'):
-        # Load the model only once
         self.model = SentenceTransformer(model_name)
         self.rules = self._load_rules()
         
-        # Pre-compute embeddings for speed
         if self.rules:
             self.rule_texts = [r['text'] for r in self.rules]
             self.rule_embeddings = self.model.encode(self.rule_texts, convert_to_tensor=True)
@@ -22,7 +20,6 @@ class ComplianceAuditor:
             self.rule_embeddings = None
 
     def _load_rules(self, filename='dpdp_rules.txt'):
-        """Parses the rule file (Format: Rule ID: Rule Text)"""
         parsed_rules = []
         try:
             with open(filename, 'r', encoding='utf-8') as f:
@@ -41,15 +38,11 @@ class ComplianceAuditor:
         if not policy_text or not self.rules:
             return []
         
-        # Split policy into meaningful chunks
         policy_chunks = [p.strip() for p in policy_text.split('\n') if len(p) > 20]
-        
         if not policy_chunks:
             return []
 
-        # Vectorize the policy text
         policy_embeddings = self.model.encode(policy_chunks, convert_to_tensor=True)
-        
         audit_results = []
 
         for i, rule in enumerate(self.rules):
@@ -80,49 +73,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 🛠️ FIXED CSS FOR VISIBILITY ---
+# --- CLEAN CSS (Minimal overrides) ---
 st.markdown("""
     <style>
-    /* 1. Main Background - Light Grey for contrast */
-    .stApp {
-        background-color: #f8f9fa;
-    }
-    
-    /* 2. Metric Cards (The Score Boxes) - Force White Background & Black Text */
+    /* Improve metric box visibility without forcing colors */
     div[data-testid="stMetric"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e0e0e0;
+        background-color: rgba(128, 128, 128, 0.1); /* Subtle transparent grey */
+        border: 1px solid rgba(128, 128, 128, 0.2);
         padding: 15px;
         border-radius: 8px;
-        box-shadow: 0px 2px 4px rgba(0,0,0,0.05);
-        color: #000000 !important;
-    }
-    
-    /* Force specific text elements inside metrics to be black */
-    div[data-testid="stMetric"] label {
-        color: #444444 !important; /* Label Color */
-    }
-    div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
-        color: #000000 !important; /* Value Color */
-    }
-
-    /* 3. Expander/Dropdown Styling - Clean White Look */
-    .streamlit-expanderHeader {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-radius: 5px;
-    }
-    div[data-testid="stExpander"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        color: #000000 !important;
-    }
-    
-    /* 4. Fix text inside the Expanders */
-    .streamlit-expanderContent {
-        color: #000000 !important;
-        background-color: #ffffff !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -140,7 +99,6 @@ st.divider()
 # Sidebar
 with st.sidebar:
     st.header("⚙️ Audit Configuration")
-    # Set default to 0.50 based on calibration
     threshold = st.slider("Strictness Level (Threshold)", 0.30, 0.80, 0.50, 0.05)
     st.caption("Lower = More lenient. Higher = Stricter.")
     st.divider()
@@ -198,7 +156,7 @@ if st.button("🚀 Run Compliance Audit", type="primary", use_container_width=Tr
                     "Status": ["Compliant", "Gaps"],
                     "Count": [pass_count, total_rules - pass_count]
                 })
-                # Using explicit colors to avoid blending issues
+                # Use standard Plotly colors that work on dark/light backgrounds
                 fig = px.pie(chart_data, values='Count', names='Status', hole=0.5,
                              color='Status', color_discrete_map={'Compliant':'#00CC96', 'Gaps':'#EF553B'})
                 fig.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0), height=200)
@@ -220,9 +178,7 @@ if st.button("🚀 Run Compliance Audit", type="primary", use_container_width=Tr
                 for res in gaps:
                     with st.expander(f"🔴 {res['rule_id']} (Confidence: {res['match_score']}%)"):
                         st.markdown(f"**Missing Requirement:**")
-                        # Explicit styling for text readability
-                        st.markdown(f"<div style='color: black;'>{res['requirement']}</div>", unsafe_allow_html=True)
-                        st.divider()
+                        st.info(res['requirement']) # Using st.info for better visibility in dark mode
                         st.markdown("**Recommendation:** *Add a specific clause addressing this requirement.*")
 
             with tab2:
@@ -231,7 +187,7 @@ if st.button("🚀 Run Compliance Audit", type="primary", use_container_width=Tr
                 for res in passes:
                     with st.expander(f"✅ {res['rule_id']} (Confidence: {res['match_score']}%)"):
                         st.markdown(f"**Requirement:**")
-                        st.markdown(f"<div style='color: black;'>{res['requirement']}</div>", unsafe_allow_html=True)
+                        st.text(res['requirement'])
                         st.success(f"**Found in Policy:**\n> \"{res['company_clause']}\"")
             
             # Download
